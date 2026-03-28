@@ -15,9 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         repo:
-          - "erp.batidospitaya.com"
-          - "api.batidospitaya.com"
-          - "talento.batidospitaya.com"
+          - "erp.batidospitaya"
+          - "api.batidospitaya"
+          - "talento.batidospitaya"
 
     steps:
       - name: 🚀 Dispatch a ${{ matrix.repo }}
