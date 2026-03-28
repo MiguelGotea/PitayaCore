@@ -11,3 +11,5 @@ Este archivo indica la versión de sincronización activa del sistema PitayaCore
 | **Flujos** | sync-to-subdomains · receive-core-sync · propose-core-update |
 
 > Modificar este archivo desde cualquier repo activa el flujo de sincronización completo.
+
+prueba manual
