@@ -22,6 +22,7 @@ jobs:
     steps:
       - name: 🚀 Dispatch a ${{ matrix.repo }}
         uses: peter-evans/repository-dispatch@v3
+        id: dispatch
         with:
           token: ${{ secrets.SYNC_TOKEN }}
           repository: MiguelGotea/${{ matrix.repo }}
@@ -31,3 +32,8 @@ jobs:
               "sha": "${{ github.sha }}",
               "triggered_by": "PitayaCore"
             }
+      
+      - name: 🛰️ Log del Dispatch
+        run: |
+          echo "🌐 Enviado a: MiguelGotea/${{ matrix.repo }}"
+          echo "🆔 SHA enviado: ${{ github.sha }}"
