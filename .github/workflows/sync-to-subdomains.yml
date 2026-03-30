@@ -1,4 +1,4 @@
-name: 🔄 Sync PitayaCore → All Subdomains (v12)
+name: 🔄 Sync PitayaCore → All Subdomains (v12.3)
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
       - 'core/**'
       - 'docs/**'
       - '.agent/**'
+  repository_dispatch:
+    types: [ force-sync, pitayacore-sync ]
 
 jobs:
   sync:
@@ -18,10 +20,10 @@ jobs:
       - name: 🚀 1. Checkout
         uses: actions/checkout@v4
 
-      - name: 🛡️ 2. Filtro Anti-Circular (v12 Robust)
+      - name: 🛡️ 2. Filtro Anti-Circular (v12.3 Robust)
         id: filter
         env:
-          MSG: ${{ github.event.head_commit.message }}
+          MSG: ${{ github.event.head_commit.message || 'Dispatch Force Sync' }}
           REPRO: ${{ matrix.repo }}
         run: |
           # Limpiamos el mensaje de caracteres especiales y comparamos
