@@ -1,77 +1,56 @@
-# PitayaCore — Sistema de Sincronización Centralizada
+# PitayaCore — Sistema de Sincronización de Hierro (Iron Sync v3)
 
-Este repositorio actúa como la **"Fuente de Verdad" (Source of Truth)** para todos los archivos compartidos del ecosistema Pitaya. 
+Este repositorio actúa como la **"Fuente de Verdad" (Source of Truth)** definitiva para todos los componentes compartidos del ecosistema Pitaya (API, ERP, Talento).
 
-## 🏗️ Arquitectura del Sistema
+## 🛡️ Arquitectura Iron Sync v3
 
-El sistema utiliza **GitHub Actions** para mantener sincronizadas las carpetas críticas entre múltiples repositorios.
+El sistema ha sido evolucionado hacia un modelo de **Alta Estabilidad y Descentralización**, diseñado para eliminar inconsistencias, retrasos de propagación y colisiones de archivos.
 
-### Carpetas Sincronizadas:
-- `/core`: Lógica de negocio, vendors (PHPMailer, QR, etc.), y herramientas globales.
-- `/docs`: Documentación técnica y estándares del proyecto.
-- `/.agent`: Configuraciones y skills para agentes de IA.
+### Componentes Sincronizados:
+- `/core`: Lógica de negocio, controladores PDO, y librerías globales.
+- `/docs`: Estándares de desarrollo, esquemas de BD y manuales.
+- `/.agent`: Inteligencia y Skills para los agentes de programación.
 
-### Flujos de Trabajo:
-1. **Push en PitayaCore**: Dispara el envío de cambios hacia todos los subdominios (ERP, API, Talento, etc.).
-2. **Push en Subdominio**: Si se modifica algo dentro de `/core` en un subdominio, este propone el cambio a PitayaCore, el cual lo acepta y lo redistribuye a los demás repositorios.
-3. **Control de Bucles**: El sistema detecta si el contenido es idéntico antes de commitear, evitando ciclos infinitos de sincronización.
-
----
-
-## 🚀 Guía: Cómo agregar un nuevo Subdominio al Sistema
-
-Si en el futuro creas un nuevo repositorio (ej. `tienda.batidospitaya.com`) y quieres que reciba el núcleo automáticamente, sigue estos pasos:
-
-### 1. Preparar el nuevo Repositorio
-- Crea el repositorio en GitHub.
-- Configura los **Secrets** en `Settings > Secrets and variables > Actions`:
-    - `SYNC_TOKEN`: Un Classic PAT con permisos de `repo` y `workflow`.
-    - `HOSTINGER_SSH_KEY`, `HOSTINGER_USER`, `HOSTINGER_HOST`: Credenciales de SSH.
-    - `HOSTINGER_PATH_NEW`: La ruta destino en el servidor.
-
-### 2. Configurar el Workflow de Recepción
-- Copia el archivo `.github/workflows/receive-core-sync.yml` de cualquier otro subdominio al nuevo repo.
-- **Importante**: Ajusta el secret del path en el paso de deploy (ej: cambia `secrets.HOSTINGER_PATH_API` por el nuevo secret).
-
-### 3. Configurar el Workflow para Proponer Cambios
-- Copia el archivo `.github/workflows/propose-core-update.yml` al nuevo repo. No requiere cambios adicionales.
-
-### 4. Ajustar el .gitignore
-- Asegúrate de que el `.gitignore` del nuevo repo **no** bloquee las carpetas compartidas. 
-- Deben estar permitidas:
-  ```gitignore
-  !/core/
-  !/docs/
-  !/.agent/
-  ```
-
-### 5. Dar de alta en PitayaCore
-- En este repositorio (`PitayaCore`), edita el archivo `.github/workflows/sync-to-subdomains.yml`.
-- Agrega el nombre del nuevo repositorio a la lista de la **matrix**:
-  ```yaml
-  matrix:
-    repo:
-      - "erp.batidospitaya"
-      - "api.batidospitaya"
-      - "talento.batidospitaya"
-      - "NUEVO.REPO"  # <--- Agregarlo aquí
-  ```
+### Pilares de Estabilidad:
+1. **Iron Sync (Manual Clone)**: Las acciones no usan caché; descargan una copia limpia de `PitayaCore` y validan el SHA para asegurar que el código sea exactamente el que acabas de subir.
+2. **Cola de Seguridad (Concurrency)**: GitHub encola las actualizaciones. Si haces varios pushes rápidos, se procesan uno por uno en orden, evitando que se "pisen" entre sí.
+3. **Validación Flexible**: El sistema detecta si la versión en la nube ya es más reciente que la solicitada y permite que la sincronización avance sin errores.
+4. **Escudo de Credenciales**: Validación automática de secretos de Hostinger (`HOSTINGER_PATH`, etc.) con soporte para nombres personalizados (`HOSTINGER_PATH_API`, etc.).
 
 ---
 
-## 💻 Uso de Scripts Locales
+## 🚀 Flujo de Trabajo (Desarrollo AI/Humano)
 
-Para facilitar el trabajo en el entorno local (`VisualCode/`), utiliza el script de despliegue:
-
-### Actualizar TODO desde PitayaCore:
-Desde la carpeta `PitayaCore/`, ejecuta:
+### 1. Desarrollo en el Núcleo
+Todo cambio global debe realizarse en este repositorio (`PitayaCore`). Para desplegar los cambios a toda la red:
 ```powershell
-./.scripts/gitpush.ps1
+# Desde PitayaCore/
+.\.scripts\gitpush.ps1
 ```
-Este script:
-1. Sube tus cambios a GitHub.
-2. **Espeja localmente** los archivos en tus carpetas de ERP, API y Talento de forma instantánea (usando `robocopy`), evitando los retrasos de la nube.
+*Esto dispara el envío masivo a los repositorios remotos de la API, ERP y Talento.*
+
+### 2. Sincronización Local
+Para que tus cambios en `PitayaCore` se reflejen en tus carpetas locales de trabajo en `VisualCode/`, utiliza la herramienta unificada:
+```powershell
+# Desde la raíz de VisualCode/
+.\gitsync-local.ps1
+```
+*Este script actualiza quirúrgicamente las carpetas `/core`, `/docs` y `/.agent` de todos tus repositorios locales.*
 
 ---
 
-**Nota**: Este sistema está diseñado para que nunca tengas que copiar archivos a mano entre carpetas. Confía en el flujo de Git.
+## 💻 Agregar un nuevo Subdominio
+
+Para integrar un nuevo repositorio al ecosistema:
+
+1. **GitHub Secrets**: Configura `SYNC_TOKEN` y las credenciales de Hostinger (`HOSTINGER_HOST`, `HOSTINGER_USER`, `HOSTINGER_SSH_KEY` y `HOSTINGER_PATH`). El sistema soporta el sufijo del subdominio en el path (ej: `HOSTINGER_PATH_TIENDA`).
+2. **Workflow de Recepción**: Copia el archivo `.github/workflows/receive-core-sync.yml` de cualquier subdominio al nuevo repositorio.
+3. **Registro en PitayaCore**: Agrega el nombre del repo a la lista `matrix` en `.github/workflows/sync-to-subdomains.yml` de este repositorio.
+
+---
+
+## 🛠️ Herramientas Locales
+- `PitayaCore/.scripts/gitpush.ps1`: El disparador global.
+- `VisualCode/gitsync-local.ps1`: El sincronizador local de alta precisión.
+
+**Nota**: Se ha eliminado el uso de `robocopy` y scripts centralizados forzados para garantizar que el desarrollador nunca pierda trabajo local por sobrescrituras accidentales.
