@@ -1,56 +1,58 @@
-# PitayaCore — Sistema de Sincronización de Hierro (Iron Sync v3)
+# PitayaCore — Mano de Hierro (Iron Sync v13.1)
 
-Este repositorio actúa como la **"Fuente de Verdad" (Source of Truth)** definitiva para todos los componentes compartidos del ecosistema Pitaya (API, ERP, Talento).
+Este repositorio es el **Orquestador Central** del ecosistema Pitaya (API, ERP, Talento). Su función es actuar como la única Fuente de Verdad y garantizar la propagación absoluta de cambios.
 
-## 🛡️ Arquitectura Iron Sync v3
+## 🛡️ Arquitectura Mano de Hierro (v13.1)
 
-El sistema ha sido evolucionado hacia un modelo de **Alta Estabilidad y Descentralización**, diseñado para eliminar inconsistencias, retrasos de propagación y colisiones de archivos.
+A diferencia de modelos anteriores basados en señales intermitentes, la **v13.1** utiliza un modelo de **Inyección Directa por Checksum**.
 
 ### Componentes Sincronizados:
-- `/core`: Lógica de negocio, controladores PDO, y librerías globales.
-- `/docs`: Estándares de desarrollo, esquemas de BD y manuales.
-- `/.agent`: Inteligencia y Skills para los agentes de programación.
+- `/core`: Lógica de negocio y librerías globales.
+- `/docs`: Estándares, arquitectura y manuales.
+- `/.agent`: Inteligencia y Skills (AI) sincronizadas.
 
-### Pilares de Estabilidad:
-1. **Iron Sync (Manual Clone)**: Las acciones no usan caché; descargan una copia limpia de `PitayaCore` y validan el SHA para asegurar que el código sea exactamente el que acabas de subir.
-2. **Cola de Seguridad (Concurrency)**: GitHub encola las actualizaciones. Si haces varios pushes rápidos, se procesan uno por uno en orden, evitando que se "pisen" entre sí.
-3. **Validación Flexible**: El sistema detecta si la versión en la nube ya es más reciente que la solicitada y permite que la sincronización avance sin errores.
-4. **Escudo de Credenciales**: Validación automática de secretos de Hostinger (`HOSTINGER_PATH`, etc.) con soporte para nombres personalizados (`HOSTINGER_PATH_API`, etc.).
-
----
-
-## 🚀 Flujo de Trabajo (Desarrollo AI/Humano)
-
-### 1. Desarrollo en el Núcleo
-Todo cambio global debe realizarse en este repositorio (`PitayaCore`). Para desplegar los cambios a toda la red:
-```powershell
-# Desde PitayaCore/
-.\.scripts\gitpush.ps1
-```
-*Esto dispara el envío masivo a los repositorios remotos de la API, ERP y Talento.*
-
-### 2. Sincronización Local
-Para que tus cambios en `PitayaCore` se reflejen en tus carpetas locales de trabajo en `VisualCode/`, utiliza la herramienta unificada:
-```powershell
-# Desde la raíz de VisualCode/
-.\gitsync-local.ps1
-```
-*Este script actualiza quirúrgicamente las carpetas `/core`, `/docs` y `/.agent` de todos tus repositorios locales.*
+### Pilares de la v13.1:
+1. **Orquestación Directa**: Cuando `PitayaCore` recibe un cambio, él mismo clona cada subdominio y les **inyecta** los archivos mediante un `git push` directo. Esto elimina fallos por pérdida de señales.
+2. **Checksum Total (`-c`)**: El sistema compara los archivos por su **contenido real**, no por su fecha. Esto garantiza que cada coma se detecte y se actualice al 100%.
+3. **Semáforo Determinista**: Si la inyección en cualquier subdominio falla, la acción global se pone en **ROJO**. Si está en Verde, la sincronización es físicamente certera.
 
 ---
 
-## 💻 Agregar un nuevo Subdominio
+## 🚀 Flujo de Trabajo (Certeza Total)
+
+### 1. Cambio en el Maestro
+Realiza los cambios en `PitayaCore` y súbelos:
+```powershell
+./PitayaCore/.scripts/gitpush.ps1
+```
+*Esto inyectará el cambio automáticamente en API, ERP y Talento.*
+
+### 2. Cambio desde un Subdominio
+Si trabajas en un repositorio hijo (ej: ERP) y necesitas que el cambio llegue a todos:
+```powershell
+./erp.batidospitaya.com/.scripts/gitpush.ps1
+```
+*El subdominio mandará el cambio al Maestro, y el Maestro lo repartirá a todos los demás.*
+
+### 3. Sincronización Local
+Para actualizar tus carpetas locales de trabajo en `VisualCode/`:
+```powershell
+./gitsync-local.ps1
+```
+
+---
+
+## 💻 Cómo agregar un nuevo Subdominio (en 5 minutos)
 
 Para integrar un nuevo repositorio al ecosistema:
 
-1. **GitHub Secrets**: Configura `SYNC_TOKEN` y las credenciales de Hostinger (`HOSTINGER_HOST`, `HOSTINGER_USER`, `HOSTINGER_SSH_KEY` y `HOSTINGER_PATH`). El sistema soporta el sufijo del subdominio en el path (ej: `HOSTINGER_PATH_TIENDA`).
-2. **Workflow de Recepción**: Copia el archivo `.github/workflows/receive-core-sync.yml` de cualquier subdominio al nuevo repositorio.
-3. **Registro en PitayaCore**: Agrega el nombre del repo a la lista `matrix` en `.github/workflows/sync-to-subdomains.yml` de este repositorio.
+1. **GitHub Secrets**: Configura `SYNC_TOKEN` y las credenciales de Hostinger (`HOSTINGER_HOST`, `HOSTINGER_USER`, `HOSTINGER_SSH_KEY` y `HOSTINGER_PATH`).
+2. **Workflow de Despliegue**: Asegúrate de que tu `deploy-*.yml` incluya las carpetas `core/` y `docs/` en el `rsync` hacia Hostinger.
+3. **Workflow de Propuesta**: Copia el archivo `.github/workflows/propose-core-update.yml` de un subdominio existente al nuevo para permitirle mandar cambios al Maestro.
+4. **Registro en PitayaCore**: Agrega el nombre del nuevo repo a la lista `matrix` en `.github/workflows/sync-to-subdomains.yml` dentro de `PitayaCore`.
 
 ---
 
-## 🛠️ Herramientas Locales
-- `PitayaCore/.scripts/gitpush.ps1`: El disparador global.
+## 🛠️ Herramientas
+- `PitayaCore/.scripts/gitpush.ps1`: El disparador de inyección global.
 - `VisualCode/gitsync-local.ps1`: El sincronizador local de alta precisión.
-
-**Nota**: Se ha eliminado el uso de `robocopy` y scripts centralizados forzados para garantizar que el desarrollador nunca pierda trabajo local por sobrescrituras accidentales.
