@@ -1,4 +1,4 @@
-name: 🔄 Sync PitayaCore → All Subdomains
+﻿name: 🔄 Sync PitayaCore → All Subdomains
 
 on:
   push:
@@ -7,33 +7,36 @@ on:
       - 'core/**'
       - 'docs/**'
       - '.agent/**'
+  repository_dispatch:
+    types: [ core-updated-by-subdomain ]
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        repo:
-          - "erp.batidospitaya"
-          - "api.batidospitaya"
-          - "talento.batidospitaya"
-
+        repo: [api.batidospitaya, erp.batidospitaya, talento.batidospitaya]
     steps:
-      - name: 🚀 Dispatch a ${{ matrix.repo }}
+      - name: 🚀 1. Checkout
+        uses: actions/checkout@v4
+
+      - name: 🛡️ 2. Dispatch Inteligente (Anti-Circular v10)
+        # Si el mensaje del commit contiene el nombre del repo del matrix, OMITIRLO.
+        if: "!contains(github.event.head_commit.message, matrix.repo)"
         uses: peter-evans/repository-dispatch@v3
-        id: dispatch
         with:
           token: ${{ secrets.SYNC_TOKEN }}
           repository: MiguelGotea/${{ matrix.repo }}
           event-type: pitayacore-sync
-          client-payload: |
-            {
-              "sha": "${{ github.sha }}",
-              "triggered_by": "PitayaCore"
-            }
-      
-      - name: 🛰️ Log del Dispatch
+          client_payload: '{"sha": "${{ github.sha }}"}'
+
+      - name: 📢 3. Log del Dispatch
+        if: "!contains(github.event.head_commit.message, matrix.repo)"
         run: |
           echo "🌐 Enviado a: MiguelGotea/${{ matrix.repo }}"
           echo "🆔 SHA enviado: ${{ github.sha }}"
+
+      - name: ⏭️ 4. Log de OmisiÃ³n (Filtro de Origen)
+        if: "contains(github.event.head_commit.message, matrix.repo)"
+        run: |
+          echo "⏭️ OMITIENDO dispatch a ${{ matrix.repo }} porque es el ORIGEN del cambio."
