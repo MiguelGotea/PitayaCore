@@ -16,7 +16,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        repo: [api.batidospitaya, erp.batidospitaya, talento.batidospitaya]
+        repo: [api.batidospitaya, erp.batidospitaya, talento.batidospitaya, pos.batidospitaya]
     steps:
       - name: 🚀 1. Checkout Master (PitayaCore)
         uses: actions/checkout@v4
