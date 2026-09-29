@@ -65,9 +65,14 @@ jobs:
           
           # 3.2 Sincronización física por CONTENIDO (Checksum total)
           # -r: recursivo, -v: verbose, -h: human readable, -c: CHECKSUM
-          rsync -rvhc --delete ./core/   _target/core/
+          # Los env.php NUNCA se sincronizan entre repos (contienen credenciales por entorno)
+          rsync -rvhc --delete \
+            --exclude='database/env.php' \
+            --exclude='database/env.production.php' \
+            ./core/   _target/core/
           rsync -rvhc --delete ./docs/   _target/docs/
           rsync -rvhc --delete .agent/   _target/.agent/
+
           
           # 3.3 Commit y Push Directo
           cd _target
